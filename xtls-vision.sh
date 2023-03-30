@@ -45,8 +45,6 @@ panic() {
 	exit 1
 }
 
-
-fail=0
 ol_version=$(curl -sL github.com/Jesanne87/xtls-vision/raw/vision/xtls-vision.sh | grep "script_version=" | head -1 | awk -F '=|"' '{print $3}')
 if [[ ! $(echo -e "$ol_version\n$script_version" | sort -rV | head -n 1) == "$script_version" ]]; then
 wget -O xray-yes-en.sh github.com/Jesanne87/xtls-vision/raw/vision/xtls-vision.sh || fail=1
@@ -57,7 +55,6 @@ sleep 2
 exit 0
 fi
 
-get_info
 read -rp "Your domain: " xray_domain
 [[ -z $xray_domain ]] && install_all
 echo ""
@@ -185,7 +182,6 @@ no)
 		error "The operating system is not supported"
 	fi
 
-	fail=0
 	if [[ $(type -P ufw) ]]; then
 		if [[ $port -ne 443 ]]; then
 			ufw allow $port/tcp || fail=1
@@ -208,7 +204,6 @@ no)
 		firewall-cmd --reload || fail=1
 	else
 		warning "Please configure the firewall by yourself."
-		return 0
 	fi
 	if [[ $fail -eq 1 ]]; then
 		warning "Failed to configure the firewall, please configure by yourself."
