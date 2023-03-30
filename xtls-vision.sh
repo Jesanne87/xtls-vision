@@ -62,7 +62,7 @@ update_script() {
 	fi
 }
 
-install_all() {
+
 	prepare_installation
 	sleep 3
 	check_env
@@ -76,7 +76,7 @@ install_all() {
 	crontab_xray
 	finish
 	exit 0
-}
+
 
 prepare_installation() {
 	get_info
