@@ -5,7 +5,7 @@
 # Thanks for using.
 #
 # download script
-cd /usr/local/sbin
+cd /usr/bin
 wget -O menu "https://raw.githubusercontent.com/Jesanne87/xtls-vision/main/menu.sh"
 chmod +x menu
 rm -f menu.sh
