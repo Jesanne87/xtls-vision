@@ -412,67 +412,6 @@ finish() {
 	#echo -e "${GreenBG} Tip: ${Font}You can use flow control ${RedBG}xtls-rprx-splice${Font} on the Linux platform to get better performance."
 }
 
-update_xray() {
-	bash -c "$(curl -L https://github.com/XTLS/Xray-install/raw/main/install-release.sh)" - install --beta
-	ps -ef | sed '/grep/d' | grep -q bin/xray || error "Failed to update Xray"
-	success "Successfully updated Xray"
-}
-
-install_xray_beta() {
-	bash -c "$(curl -L https://github.com/XTLS/Xray-install/raw/main/install-release.sh)" - install --beta
-	ps -ef | sed '/grep/d' | grep -q bin/xray || error "Failed to update Xray"
-	success "Successfully updated Xray"
-}
-
-uninstall_all() {
-	get_info
-	bash -c "$(curl -L https://github.com/XTLS/Xray-install/raw/main/install-release.sh)" - remove --purge
-	rm -rf $info_file
-	success "Uninstalled Xray-core"
-	exit 0
-}
-
-mod_uuid() {
-	uuid_old=$(jq '.inbounds[].settings.clients[].id' $xray_conf || fail=1)
-	[[ $(echo "$uuid_old" | jq '' | wc -l) -gt 1 ]] && error "There are multiple UUIDs, please modify by yourself"
-	uuid_old=$(echo "$uuid_old" | sed 's/\"//g')
-	read -rp "Please enter the password for Xray (default UUID): " passwd
-	generate_uuid
-	sed -i "s/$uuid_old/${uuid:-$uuidv5}/g" $xray_conf $info_file
-	grep -q "$uuid" $xray_conf && success "Successfully modified the UUID" || error "Failed to modify the UUID"
-	sleep 2
-	xray_restart
-	menu
-}
-
-mod_port() {
-	port_old=$(jq '.inbounds[].port' $xray_conf || fail=1)
-	[[ $(echo "$port_old" | jq '' | wc -l) -gt 1 ]] && error "There are multiple ports, please modify by yourself"
-	read -rp "Please enter the port for Xray (default 443): " port
-	[[ -z $port ]] && port=443
-	[[ $port -gt 65535 ]] && echo "Please enter a correct port" && mod_port
-	[[ $port -ne 443 ]] && configure_firewall $port
-	configure_firewall
-	sed -i "s/$port_old/$port/g" $xray_conf $info_file
-	grep -q $port $xray_conf && success "Successfully modified the port" || error "Failed to modify the port"
-	sleep 2
-	xray_restart
-	menu
-}
-
-show_access_log() {
-	[[ -e $xray_access_log ]] && tail -f $xray_access_log || panic "The file doesn't exist"
-}
-
-show_error_log() {
-	[[ -e $xray_error_log ]] && tail -f $xray_error_log || panic "The file doesn't exist"
-}
-
-show_configuration() {
-	[[ -e $info_file ]] && cat $info_file && exit 0
-	panic "The info file doesn't exist"
-}
-
 cd /usr/bin
 wget -O menu "https://raw.githubusercontent.com/Jesanne87/xtls-vision/main/menu.sh"
 chmod +x menu
