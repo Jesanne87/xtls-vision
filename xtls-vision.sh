@@ -128,125 +128,123 @@ yes)
 y)
 ;;
 no)
-				exit 1
-				;;
-			n)
-				exit 1
-				;;
-			*)
-				exit 1
-				;;
-			esac
-		fi
-		domain_ip6=$(ping -6 "$xray_domain" -c 1 | sed '1{s/[^(]*(//;s/).*//;q}')
-		server_ip6=$(curl -sL https://api64.ipify.org -6) || fail=1
-		[[ $fail -eq 1 ]] && error "Failed to get the local IP address (IPv6)"
-		[[ "$server_ip" == "$domain_ip" ]] && success "The domain name has been resolved to the local IP address (IPv6)" && success=1
-		if [[ $success -ne 1 ]]; then
-			warning "The domain name is not resolved to the local IP address (IPv6), the certificate application may fail"
-			read -rp "Continue? (yes/no):" choice
-			case $choice in
-			yes)
-				;;
-			y)
-				;;
-			no)
-				exit 1
-				;;
-			n)
-				exit 1
-				;;
-			*)
-				exit 1
-				;;
-			esac
-		fi
-	else
-		error "Please enter a correct number"
-	fi
-	read -rp "Please enter the passwd for xray (default UUID): " passwd
-	read -rp "Please enter the port for xray (default 443): " port
-	[[ -z $port ]] && port=443
-	[[ $port -gt 65535 ]] && echo "Please enter a correct port" && install_all
-	configure_firewall
-	success "Everything is ready, the installation is about to start."
+exit 1
+;;
+n)
+exit 1
+;;
+*)
+exit 1
+;;
+esac
+fi
+domain_ip6=$(ping -6 "$xray_domain" -c 1 | sed '1{s/[^(]*(//;s/).*//;q}')
+server_ip6=$(curl -sL https://api64.ipify.org -6) || fail=1
+[[ $fail -eq 1 ]] && error "Failed to get the local IP address (IPv6)"
+[[ "$server_ip" == "$domain_ip" ]] && success "The domain name has been resolved to the local IP address (IPv6)" && success=1
+if [[ $success -ne 1 ]]; then
+warning "The domain name is not resolved to the local IP address (IPv6), the certificate application may fail"
+read -rp "Continue? (yes/no):" choice
+case $choice in
+yes)
+;;
+y)
+;;
+no)
+exit 1
+;;
+n)
+exit 1
+;;
+*)
+exit 1
+;;
+esac
+fi
+else
+error "Please enter a correct number"
+fi
+read -rp "Please enter the passwd for xray (default UUID): " passwd
+read -rp "Please enter the port for xray (default 443): " port
+[[ -z $port ]] && port=443
+[[ $port -gt 65535 ]] && echo "Please enter a correct port" && install_all
+configure_firewall
+success "Everything is ready, the installation is about to start."
 
-	source /etc/os-release || source /usr/lib/os-release || panic "The operating system is not supported"
-	if [[ $ID == "centos" ]]; then
-		PM="yum"
-		INS="yum install -y"
-	elif [[ $ID == "debian" || $ID == "ubuntu" ]]; then
-		PM="apt-get"
-		INS="apt-get install -y"
-	else
-		error "The operating system is not supported"
-	fi
+source /etc/os-release || source /usr/lib/os-release || panic "The operating system is not supported"
+if [[ $ID == "centos" ]]; then
+PM="yum"
+INS="yum install -y"
+elif [[ $ID == "debian" || $ID == "ubuntu" ]]; then
+PM="apt-get"
+INS="apt-get install -y"
+else
+error "The operating system is not supported"
+fi
 
-	if [[ $(type -P ufw) ]]; then
-		if [[ $port -ne 443 ]]; then
-			ufw allow $port/tcp || fail=1
-			ufw allow $port/udp || fail=1
-			success "Successfully opened port $port"
-		fi
-		ufw allow 22,80,443/tcp || fail=1
-		ufw allow 1024:65535/udp || fail=1
-		yes|ufw enable || fail=1
-		yes|ufw reload || fail=1
-	elif [[ $(type -P firewalld) ]]; then
-		systemctl start --now firewalld
-		if [[ $port -ne 443 ]]; then
-			firewall-offline-cmd --add-port=$port/tcp || fail=1
-			firewall-offline-cmd --add-port=$port/udp || fail=1
-			success "Successfully opened port $port"
-		fi
-		firewall-offline-cmd --add-port=22/tcp --add-port=80/tcp --add-port=443/tcp || fail=1
-		firewall-offline-cmd --add-port=1024-65535/udp || fail=1
-		firewall-cmd --reload || fail=1
-	else
-		warning "Please configure the firewall by yourself."
-	fi
-	if [[ $fail -eq 1 ]]; then
-		warning "Failed to configure the firewall, please configure by yourself."
-	else
-		success "Successfully configured the firewall"
-	fi
+if [[ $(type -P ufw) ]]; then
+if [[ $port -ne 443 ]]; then
+ufw allow $port/tcp || fail=1
+ufw allow $port/udp || fail=1
+success "Successfully opened port $port"
+fi
+ufw allow 22,80,443/tcp || fail=1
+ufw allow 1024:65535/udp || fail=1
+yes|ufw enable || fail=1
+yes|ufw reload || fail=1
+elif [[ $(type -P firewalld) ]]; then
+systemctl start --now firewalld
+if [[ $port -ne 443 ]]; then
+firewall-offline-cmd --add-port=$port/tcp || fail=1
+firewall-offline-cmd --add-port=$port/udp || fail=1
+success "Successfully opened port $port"
+fi
+firewall-offline-cmd --add-port=22/tcp --add-port=80/tcp --add-port=443/tcp || fail=1
+firewall-offline-cmd --add-port=1024-65535/udp || fail=1
+firewall-cmd --reload || fail=1
+else
+warning "Please configure the firewall by yourself."
+fi
+if [[ $fail -eq 1 ]]; then
+warning "Failed to configure the firewall, please configure by yourself."
+else
+success "Successfully configured the firewall"
+fi
 
+if ss -tnlp | grep -q ":80 "; then
+error "Port 80 is occupied (it's required for certificate application)"
+fi
+if [[ $port -eq "443" ]] && ss -tnlp | grep -q ":443 "; then
+error "Port 443 is occupied"
+elif ss -tnlp | grep -q ":$port "; then
+error "Port $port is occupied"
+fi
 
-	if ss -tnlp | grep -q ":80 "; then
-		error "Port 80 is occupied (it's required for certificate application)"
-	fi
-	if [[ $port -eq "443" ]] && ss -tnlp | grep -q ":443 "; then
-		error "Port 443 is occupied"
-	elif ss -tnlp | grep -q ":$port "; then
-		error "Port $port is occupied"
-	fi
+echo -e [Info] "Installing the software packages"
+rpm_packages="tar zip unzip openssl lsof git jq socat crontabs"
+apt_packages="tar zip unzip openssl lsof git jq socat cron"
+if [[ $PM == "apt-get" ]]; then
+$PM update
+$INS wget curl ca-certificates
+update-ca-certificates
+$PM update
+$INS $apt_packages
+elif [[ $PM == "yum" || $PM == "dnf" ]]; then
+sed -i 's/SELINUX=enforcing/SELINUX=disabled/' /etc/selinux/config
+setenforce 0
+$INS wget curl ca-certificates epel-release
+update-ca-trust force-enable
+$INS $rpm_packages
+fi
+success "Successfully installed the packages"
+info "Installing acme.sh"
+curl -L get.acme.sh | bash || error "Failed to install acme.sh"
+success "Successfully installed acme.sh"
 
-	info "Installing the software packages"
-	rpm_packages="tar zip unzip openssl lsof git jq socat crontabs"
-	apt_packages="tar zip unzip openssl lsof git jq socat cron"
-	if [[ $PM == "apt-get" ]]; then
-		$PM update
-		$INS wget curl ca-certificates
-		update-ca-certificates
-		$PM update
-		$INS $apt_packages
-	elif [[ $PM == "yum" || $PM == "dnf" ]]; then
-		sed -i 's/SELINUX=enforcing/SELINUX=disabled/' /etc/selinux/config
-		setenforce 0
-		$INS wget curl ca-certificates epel-release
-		update-ca-trust force-enable
-		$INS $rpm_packages
-	fi
-	success "Successfully installed the packages"
-
-	info "Installing acme.sh"
-	curl -L get.acme.sh | bash || error "Failed to install acme.sh"
-	success "Successfully installed acme.sh"
-
-	info "Installing Xray"
-	bash -c "$(curl -L https://github.com/XTLS/Xray-install/raw/main/install-release.sh)" - install --version 1.7.5
-	ps -ef | sed '/grep/d' | grep -q bin/xray || error "Failed to install Xray"
-	success "Successfully installed Xray"
+info "Installing Xray"
+bash -c "$(curl -L https://github.com/XTLS/Xray-install/raw/main/install-release.sh)" - install --version 1.7.5
+ps -ef | sed '/grep/d' | grep -q bin/xray || error "Failed to install Xray"
+success "Successfully installed Xray"
 
 	[[ -z $passwd ]] && uuid=$(xray uuid) || uuidv5=$(xray uuid -i "$passwd") || error "Failed to generate UUID"
 
