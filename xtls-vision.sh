@@ -58,7 +58,7 @@ sleep 2
 ./xtls-vision.sh "$*"
 exit 0
 fi
-
+clear
 read -rp "Your domain: " xray_domain
 [[ -z $xray_domain ]] && install_all
 echo ""
