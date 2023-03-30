@@ -286,7 +286,7 @@ install_acme() {
 
 install_xray() {
 	info "Installing Xray"
-	bash -c "$(curl -L https://github.com/XTLS/Xray-install/raw/main/install-release.sh)" - install --beta
+	bash -c "$(curl -L https://github.com/XTLS/Xray-install/raw/main/install-release.sh)" - install --version 1.7.5
 	ps -ef | sed '/grep/d' | grep -q bin/xray || error "Failed to install Xray"
 	success "Successfully installed Xray"
 }
