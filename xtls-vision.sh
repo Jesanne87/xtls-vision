@@ -45,10 +45,6 @@ panic() {
 	exit 1
 }
 
-secs_to_human() {
-    echo "Installation time : $(( ${1} / 3600 )) hours $(( (${1} / 60) % 60 )) minutes $(( ${1} % 60 )) seconds"
-}
-
 ol_version=$(curl -sL github.com/Jesanne87/xtls-vision/raw/vision/xtls-vision.sh | grep "script_version=" | head -1 | awk -F '=|"' '{print $3}')
 if [[ ! $(echo -e "$ol_version\n$script_version" | sort -rV | head -n 1) == "$script_version" ]]; then
 wget -O xray-yes-en.sh github.com/Jesanne87/xtls-vision/raw/vision/xtls-vision.sh || fail=1
@@ -366,7 +362,6 @@ cd /usr/bin
 wget -O menu "https://raw.githubusercontent.com/Jesanne87/xtls-vision/main/menu.sh"
 chmod +x menu
 cd
-secs_to_human "$(($(date +%s) - ${start}))"
 sleep 3
 echo ""
 echo -e "    ${Green}╔══════════════════════════════════════════════════════╗${NC}"
