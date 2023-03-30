@@ -406,4 +406,73 @@ echo -e "    ${Green}╚══════════════════�
 echo ""
 echo -e "   Your VPS Will Be Automatical Reboot In 5 seconds"
 cd
-sleep 5
+
+menu() {
+	clear
+	echo ""
+	echo -e "  XRAY-YES - Install and manage Xray $Red""[$script_version]""$Font"
+	#echo -e "  https://github.com/jiuqi9997/Xray-yes"
+	echo ""
+	echo -e " ---------------------------------------"
+	echo -e "  ${Green}0.${Font} Update the script"
+	echo -e "  ${Green}1.${Font} Install Xray (VLESS TCP XTLS)"
+	echo -e "  ${Green}2.${Font} Update Xray-core"
+	echo -e "  ${Green}3.${Font} Install Xray core beta (Pre)"
+	echo -e "  ${Green}4.${Font} Uninstall Xray-core"
+	echo -e " ---------------------------------------"
+	echo -e "  ${Green}5.${Font} Modify the UUID"
+	echo -e "  ${Green}6.${Font} Modify the port"
+	echo -e " ---------------------------------------"
+	echo -e "  ${Green}7.${Font} View live access logs"
+	echo -e "  ${Green}8.${Font} View live error logs"
+	echo -e "  ${Green}9.${Font} View the Xray info file"
+	echo -e "  ${Green}10.${Font} Restart Xray"
+	echo -e " ---------------------------------------"
+	#echo -e "  ${Green}11.${Font} 切换到中文"
+	echo ""
+	echo -e "  ${Green}11.${Font} Exit"
+	echo ""
+	read -rp "Please enter a number: " choice
+	case $choice in
+	0)
+		update_script
+		;;
+	1)
+		install_all
+		;;
+	2)
+		update_xray
+		;;
+	3)
+		install_xray_beta
+		;;
+	4)
+		uninstall_all
+		;;
+	5)
+		mod_uuid
+		;;
+	6)
+		mod_port
+		;;
+	7)
+		show_access_log
+		;;
+	8)
+		show_error_log
+		;;
+	9)
+		show_configuration
+		;;
+	10)
+		xray_restart
+		;;
+	11)
+		exit 0
+		;;
+	*)
+		menu
+		;;
+	esac
+}
+
