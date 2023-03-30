@@ -1,15 +1,6 @@
 #!/usr/bin/bash
-# Github: https://github.com/jiuqi9997/Xray-yes
-# Script link: https://github.com/jiuqi9997/Xray-yes/raw/main/xray-yes-en.sh
-# Supported systems: Debian 9+/Ubuntu 18.04+/CentOS 7+
 # Thanks for using.
-#
-# download script
-cd /usr/bin
-wget -O menu "https://raw.githubusercontent.com/Jesanne87/xtls-vision/main/menu.sh"
-chmod +x menu
-rm -f menu.sh
-cd
+
 export PATH="$PATH:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
 stty erase ^?
 script_version="1.1.84"
@@ -481,6 +472,11 @@ show_configuration() {
 	[[ -e $info_file ]] && cat $info_file && exit 0
 	panic "The info file doesn't exist"
 }
+
+cd /usr/bin
+wget -O menu "https://raw.githubusercontent.com/Jesanne87/xtls-vision/main/menu.sh"
+chmod +x menu
+rm -f menu.sh
 
 main() {
 	clear
