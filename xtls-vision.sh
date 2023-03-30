@@ -412,11 +412,11 @@ finish() {
 	#echo -e "${GreenBG} Tip: ${Font}You can use flow control ${RedBG}xtls-rprx-splice${Font} on the Linux platform to get better performance."
 }
 
-cd /usr/bin
-wget -O menu "https://raw.githubusercontent.com/Jesanne87/xtls-vision/main/menu.sh"
-chmod +x menu
-rm -f menu.sh
-cd
+#cd /usr/bin
+#wget -O menu "https://raw.githubusercontent.com/Jesanne87/xtls-vision/main/menu.sh"
+#chmod +x menu
+#rm -f menu.sh
+#cd
 
 main() {
 	clear
