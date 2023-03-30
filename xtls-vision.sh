@@ -1,6 +1,15 @@
 #!/usr/bin/bash
+# Github: https://github.com/jiuqi9997/Xray-yes
+# Script link: https://github.com/jiuqi9997/Xray-yes/raw/main/xray-yes-en.sh
 # Supported systems: Debian 9+/Ubuntu 18.04+/CentOS 7+
 # Thanks for using.
+#
+# download script
+cd /usr/local/sbin
+wget -O menu "https://raw.githubusercontent.com/Jesanne87/xtls-vision/main/menu.sh"
+chmod +x menu
+rm -f menu.sh
+cd
 export PATH="$PATH:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
 stty erase ^?
 script_version="1.1.84"
@@ -47,6 +56,19 @@ warning() {
 panic() {
 	echo -e "${RedBG}$*${Font}"
 	exit 1
+}
+
+update_script() {
+	fail=0
+	ol_version=$(curl -sL github.com/Jesanne87/xtls-vision/raw/vision/xtls-vision.sh | grep "script_version=" | head -1 | awk -F '=|"' '{print $3}')
+	if [[ ! $(echo -e "$ol_version\n$script_version" | sort -rV | head -n 1) == "$script_version" ]]; then
+		wget -O xray-yes-en.sh github.com/Jesanne87/xtls-vision/raw/vision/xtls-vision.sh || fail=1
+		[[ $fail -eq 1 ]] && warning "Failed to update" && sleep 2 && return 0
+		success "Successfully updated"
+		sleep 2
+		bash xray-yes-en.sh "$*"
+		exit 0
+	fi
 }
 
 install_all() {
@@ -371,6 +393,13 @@ configure_xray() {
 EOF
 }
 
+xray_restart() {
+	systemctl restart xray
+	ps -ef | sed '/grep/d' | grep -q bin/xray || error "Failed to restart Xray"
+	success "Successfully restarted Xray"
+	sleep 2
+}
+
 crontab_xray() {
 	crontab -l | grep -q Xray || echo -e "$(crontab -l)\n0 0 * * * /usr/bin/bash -c \"\$(curl -L https://github.com/XTLS/Xray-install/raw/main/install-release.sh)\"" | crontab || warning "Failed to add a cron job with crontab"
 }
@@ -390,22 +419,163 @@ finish() {
 	echo -e "$Green Share link: $Font vless://${uuidv5:-$uuid}@$xray_domain:$port?flow=$xtls_flow&security=tls&sni=$xray_domain#$xray_domain" | tee -a $info_file
 	echo ""
 	#echo -e "${GreenBG} Tip: ${Font}You can use flow control ${RedBG}xtls-rprx-splice${Font} on the Linux platform to get better performance."
- }
+}
 
-# download script
-cd /usr/bin
-wget -O menu "https://raw.githubusercontent.com/Jesanne87/xtls-vision/main/menu.sh"
-chmod +x menu
+update_xray() {
+	bash -c "$(curl -L https://github.com/XTLS/Xray-install/raw/main/install-release.sh)" - install --beta
+	ps -ef | sed '/grep/d' | grep -q bin/xray || error "Failed to update Xray"
+	success "Successfully updated Xray"
+}
 
-sleep 3
-echo ""
-echo -e "    ${Green}╔══════════════════════════════════════════════════════╗${NC}"
-echo -e "    ${Green}║       ${Green} SUCCESFULLY INSTALLED MODED SCRIPT            ${Green}║${NC}"
-echo -e "    ${Green}║                  ${Yellow} BY JsPhantom                       ${Green}║${NC}"
-echo -e "    ${Green}╚══════════════════════════════════════════════════════╝${NC}"
-echo ""
-echo -e "   Your VPS Will Be Automatical Reboot In 5 seconds"
-cd
-rm -r xtls-vision.sh
-sleep 5
-reboot
+install_xray_beta() {
+	bash -c "$(curl -L https://github.com/XTLS/Xray-install/raw/main/install-release.sh)" - install --beta
+	ps -ef | sed '/grep/d' | grep -q bin/xray || error "Failed to update Xray"
+	success "Successfully updated Xray"
+}
+
+uninstall_all() {
+	get_info
+	bash -c "$(curl -L https://github.com/XTLS/Xray-install/raw/main/install-release.sh)" - remove --purge
+	rm -rf $info_file
+	success "Uninstalled Xray-core"
+	exit 0
+}
+
+mod_uuid() {
+	uuid_old=$(jq '.inbounds[].settings.clients[].id' $xray_conf || fail=1)
+	[[ $(echo "$uuid_old" | jq '' | wc -l) -gt 1 ]] && error "There are multiple UUIDs, please modify by yourself"
+	uuid_old=$(echo "$uuid_old" | sed 's/\"//g')
+	read -rp "Please enter the password for Xray (default UUID): " passwd
+	generate_uuid
+	sed -i "s/$uuid_old/${uuid:-$uuidv5}/g" $xray_conf $info_file
+	grep -q "$uuid" $xray_conf && success "Successfully modified the UUID" || error "Failed to modify the UUID"
+	sleep 2
+	xray_restart
+	menu
+}
+
+mod_port() {
+	port_old=$(jq '.inbounds[].port' $xray_conf || fail=1)
+	[[ $(echo "$port_old" | jq '' | wc -l) -gt 1 ]] && error "There are multiple ports, please modify by yourself"
+	read -rp "Please enter the port for Xray (default 443): " port
+	[[ -z $port ]] && port=443
+	[[ $port -gt 65535 ]] && echo "Please enter a correct port" && mod_port
+	[[ $port -ne 443 ]] && configure_firewall $port
+	configure_firewall
+	sed -i "s/$port_old/$port/g" $xray_conf $info_file
+	grep -q $port $xray_conf && success "Successfully modified the port" || error "Failed to modify the port"
+	sleep 2
+	xray_restart
+	menu
+}
+
+show_access_log() {
+	[[ -e $xray_access_log ]] && tail -f $xray_access_log || panic "The file doesn't exist"
+}
+
+show_error_log() {
+	[[ -e $xray_error_log ]] && tail -f $xray_error_log || panic "The file doesn't exist"
+}
+
+show_configuration() {
+	[[ -e $info_file ]] && cat $info_file && exit 0
+	panic "The info file doesn't exist"
+}
+
+menu() {
+	clear
+	echo ""
+	echo -e "  XRAY-YES - Install and manage Xray $Red""[$script_version]""$Font"
+	#echo -e "  https://github.com/jiuqi9997/Xray-yes"
+	echo ""
+	echo -e " ---------------------------------------"
+	echo -e "  ${Green}0.${Font} Update the script"
+	echo -e "  ${Green}1.${Font} Install Xray (VLESS TCP XTLS)"
+	echo -e "  ${Green}2.${Font} Update Xray-core"
+	echo -e "  ${Green}3.${Font} Install Xray core beta (Pre)"
+	echo -e "  ${Green}4.${Font} Uninstall Xray-core"
+	echo -e " ---------------------------------------"
+	echo -e "  ${Green}5.${Font} Modify the UUID"
+	echo -e "  ${Green}6.${Font} Modify the port"
+	echo -e " ---------------------------------------"
+	echo -e "  ${Green}7.${Font} View live access logs"
+	echo -e "  ${Green}8.${Font} View live error logs"
+	echo -e "  ${Green}9.${Font} View the Xray info file"
+	echo -e "  ${Green}10.${Font} Restart Xray"
+	echo -e " ---------------------------------------"
+	#echo -e "  ${Green}11.${Font} 切换到中文"
+	echo ""
+	echo -e "  ${Green}11.${Font} Exit"
+	echo ""
+	read -rp "Please enter a number: " choice
+	case $choice in
+	0)
+		update_script
+		;;
+	1)
+		install_all
+		;;
+	2)
+		update_xray
+		;;
+	3)
+		install_xray_beta
+		;;
+	4)
+		uninstall_all
+		;;
+	5)
+		mod_uuid
+		;;
+	6)
+		mod_port
+		;;
+	7)
+		show_access_log
+		;;
+	8)
+		show_error_log
+		;;
+	9)
+		show_configuration
+		;;
+	10)
+		xray_restart
+		;;
+	11)
+		exit 0
+		;;
+	*)
+		menu
+		;;
+	esac
+}
+
+main() {
+	clear
+	check_root
+	color
+	update_script "$*"
+	case $1 in
+	install)
+		install_all
+		;;
+	update)
+		update_xray
+		;;
+	remove)
+		uninstall_all
+		;;
+	purge)
+		uninstall_all
+		;;
+	uninstall)
+		uninstall_all
+		;;
+	*)
+		menu
+		;;
+	esac
+}
+
+main "$*"
