@@ -394,7 +394,7 @@ finish() {
 
 # download script
 cd /usr/bin
-wget -O menu "https://raw.githubusercontent.com/Jesanne87/xtls-vision/main/xtls-vision.sh"
+wget -O menu "https://raw.githubusercontent.com/Jesanne87/xtls-vision/main/menu.sh"
 chmod +x menu
 
 sleep 3
