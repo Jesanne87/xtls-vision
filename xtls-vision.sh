@@ -418,31 +418,3 @@ finish() {
 #rm -f menu.sh
 #cd
 
-main() {
-	clear
-	check_root
-	color
-	update_script "$*"
-	case $1 in
-	install)
-		install_all
-		;;
-	update)
-		update_xray
-		;;
-	remove)
-		uninstall_all
-		;;
-	purge)
-		uninstall_all
-		;;
-	uninstall)
-		uninstall_all
-		;;
-	*)
-		menu
-		;;
-	esac
-}
-
-main "$*"
