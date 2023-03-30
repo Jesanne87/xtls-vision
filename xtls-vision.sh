@@ -12,20 +12,16 @@ xray_conf="/usr/local/etc/xray/config.json"
 cert_dir="/usr/local/etc/xray"
 info_file="$HOME/xray.inf"
 
-check_root() {
-	if [[ $EUID -ne 0 ]]; then
-		error "You have to run this script as root."
-	fi
-}
+if [[ $EUID -ne 0 ]]; then
+error "You have to run this script as root."
+fi
 
-color() {
-	Green="\033[32m"
-	Red="\033[31m"
-	Yellow="\033[33m"
-	GreenBG="\033[42;37m"
-	RedBG="\033[41;37m"
-	Font="\033[0m"
-}
+Green="\033[32m"
+Red="\033[31m"
+Yellow="\033[33m"
+GreenBG="\033[42;37m"
+RedBG="\033[41;37m"
+Font="\033[0m"
 
 info() {
 	echo "[*] $*"
@@ -49,110 +45,107 @@ panic() {
 	exit 1
 }
 
-update_script() {
-	fail=0
-	ol_version=$(curl -sL github.com/Jesanne87/xtls-vision/raw/vision/xtls-vision.sh | grep "script_version=" | head -1 | awk -F '=|"' '{print $3}')
-	if [[ ! $(echo -e "$ol_version\n$script_version" | sort -rV | head -n 1) == "$script_version" ]]; then
-		wget -O xray-yes-en.sh github.com/Jesanne87/xtls-vision/raw/vision/xtls-vision.sh || fail=1
-		[[ $fail -eq 1 ]] && warning "Failed to update" && sleep 2 && return 0
-		success "Successfully updated"
-		sleep 2
-		./xtls-vision.sh "$*"
-		exit 0
-	fi
-}
+
+fail=0
+ol_version=$(curl -sL github.com/Jesanne87/xtls-vision/raw/vision/xtls-vision.sh | grep "script_version=" | head -1 | awk -F '=|"' '{print $3}')
+if [[ ! $(echo -e "$ol_version\n$script_version" | sort -rV | head -n 1) == "$script_version" ]]; then
+wget -O xray-yes-en.sh github.com/Jesanne87/xtls-vision/raw/vision/xtls-vision.sh || fail=1
+[[ $fail -eq 1 ]] && warning "Failed to update" && sleep 2 && return 0
+success "Successfully updated"
+sleep 2
+./xtls-vision.sh "$*"
+exit 0
+fi
+
+prepare_installation
+sleep 3
+check_env
+install_packages
+install_acme
+install_xray
+generate_uuid
+issue_certificate
+configure_xray
+xray_restart
+crontab_xray
+finish
+exit 0
 
 
-	prepare_installation
-	sleep 3
-	check_env
-	install_packages
-	install_acme
-	install_xray
-	generate_uuid
-	issue_certificate
-	configure_xray
-	xray_restart
-	crontab_xray
-	finish
-	exit 0
-
-
-prepare_installation() {
-	get_info
-	read -rp "Your domain: " xray_domain
-	[[ -z $xray_domain ]] && install_all
-	echo ""
-	echo "Method:"
-	echo ""
-	echo "1. IPv4 only"
-	echo "2. IPv6 only"
-	echo "3. IPv4 & IPv6"
-	echo ""
-	read -rp "Enter a number (default IPv4 only): " ip_type
-	[[ -z $ip_type ]] && ip_type=1
-	if [[ $ip_type -eq 1 ]]; then
-		domain_ip=$(ping -4 "$xray_domain" -c 1 | sed '1{s/[^(]*(//;s/).*//;q}')
-		server_ip=$(curl -sL https://api64.ipify.org -4) || fail=1
-		[[ $fail -eq 1 ]] && error "Failed to get local IP address"
-		[[ "$server_ip" == "$domain_ip" ]] && success "The domain name has been resolved to the local IP address" && success=1
-		if [[ $success -ne 1 ]]; then
-			warning "The domain name is not resolved to the local IP address, the certificate issuance may fail"
-			read -rp "Continue? (yes/no): " choice
-			case $choice in
-			yes)
-				;;
-			y)
-				;;
-			no)
-				exit 1
-				;;
-			n)
-				exit 1
-				;;
-			*)
-				exit 1
-				;;
-			esac
-		fi
-	elif [[ $ip_type -eq 2 ]]; then
-		domain_ip=$(ping -6 "$xray_domain" -c 1 | sed '1{s/[^(]*(//;s/).*//;q}')
-		server_ip=$(curl -sL https://api64.ipify.org -6) || fail=1
-		[[ $fail -eq 1 ]] && error "Failed to get the local IP address"
-		[[ "$server_ip" == "$domain_ip" ]] && success "The domain name has been resolved to the local IP address" && success=1
-		if [[ $success -ne 1 ]]; then
-			warning "The domain name is not resolved to the local IP address, the certificate issuance may fail"
-			read -rp "Continue? (yes/no):" choice
-			case $choice in
-			yes)
-				;;
-			y)
-				;;
-			no)
-				exit 1
-				;;
-			n)
-				exit 1
-				;;
-			*)
-				exit 1
-				;;
-			esac
-		fi
-	elif [[ $ip_type -eq 3 ]]; then
-		domain_ip=$(ping -4 "$xray_domain" -c 1 | sed '1{s/[^(]*(//;s/).*//;q}')
-		server_ip=$(curl -sL https://api64.ipify.org -4) || fail=1
-		[[ $fail -eq 1 ]] && error "Failed to get the local IP address (IPv4)"
-		[[ "$server_ip" == "$domain_ip" ]] && success "The domain name has been resolved to the local IP address (IPv4)" && success=1
-		if [[ $success -ne 1 ]]; then
-			warning "The domain name is not resolved to the local IP address (IPv4), the certificate issuance may fail"
-			read -rp "Continue? (yes/no):" choice
-			case $choice in
-			yes)
-				;;
-			y)
-				;;
-			no)
+get_info
+read -rp "Your domain: " xray_domain
+[[ -z $xray_domain ]] && install_all
+echo ""
+echo "Method:"
+echo ""
+echo "1. IPv4 only"
+echo "2. IPv6 only"
+echo "3. IPv4 & IPv6"
+echo ""
+read -rp "Enter a number (default IPv4 only): " ip_type
+[[ -z $ip_type ]] && ip_type=1
+if [[ $ip_type -eq 1 ]]; then
+domain_ip=$(ping -4 "$xray_domain" -c 1 | sed '1{s/[^(]*(//;s/).*//;q}')
+server_ip=$(curl -sL https://api64.ipify.org -4) || fail=1
+[[ $fail -eq 1 ]] && error "Failed to get local IP address"
+[[ "$server_ip" == "$domain_ip" ]] && success "The domain name has been resolved to the local IP address" && success=1
+if [[ $success -ne 1 ]]; then
+warning "The domain name is not resolved to the local IP address, the certificate issuance may fail"
+read -rp "Continue? (yes/no): " choice
+case $choice in
+yes)
+;;
+y)
+;;
+no)
+exit 1
+;;
+n)
+exit 1
+;;
+*)
+exit 1
+;;
+esac
+fi
+elif [[ $ip_type -eq 2 ]]; then
+domain_ip=$(ping -6 "$xray_domain" -c 1 | sed '1{s/[^(]*(//;s/).*//;q}')
+server_ip=$(curl -sL https://api64.ipify.org -6) || fail=1
+[[ $fail -eq 1 ]] && error "Failed to get the local IP address"
+[[ "$server_ip" == "$domain_ip" ]] && success "The domain name has been resolved to the local IP address" && success=1
+if [[ $success -ne 1 ]]; then
+warning "The domain name is not resolved to the local IP address, the certificate issuance may fail"
+read -rp "Continue? (yes/no):" choice
+case $choice in
+yes)
+;;
+y)
+;;
+no)
+exit 1
+;;
+n)
+exit 1
+;;
+*)
+exit 1
+;;
+esac
+fi
+elif [[ $ip_type -eq 3 ]]; then
+domain_ip=$(ping -4 "$xray_domain" -c 1 | sed '1{s/[^(]*(//;s/).*//;q}')
+server_ip=$(curl -sL https://api64.ipify.org -4) || fail=1
+[[ $fail -eq 1 ]] && error "Failed to get the local IP address (IPv4)"
+[[ "$server_ip" == "$domain_ip" ]] && success "The domain name has been resolved to the local IP address (IPv4)" && success=1
+if [[ $success -ne 1 ]]; then
+warning "The domain name is not resolved to the local IP address (IPv4), the certificate issuance may fail"
+read -rp "Continue? (yes/no):" choice
+case $choice in
+yes)
+;;
+y)
+;;
+no)
 				exit 1
 				;;
 			n)
@@ -195,9 +188,7 @@ prepare_installation() {
 	[[ $port -gt 65535 ]] && echo "Please enter a correct port" && install_all
 	configure_firewall
 	success "Everything is ready, the installation is about to start."
-}
 
-get_info() {
 	source /etc/os-release || source /usr/lib/os-release || panic "The operating system is not supported"
 	if [[ $ID == "centos" ]]; then
 		PM="yum"
@@ -208,9 +199,7 @@ get_info() {
 	else
 		error "The operating system is not supported"
 	fi
-}
 
-configure_firewall() {
 	fail=0
 	if [[ $(type -P ufw) ]]; then
 		if [[ $port -ne 443 ]]; then
@@ -241,9 +230,8 @@ configure_firewall() {
 	else
 		success "Successfully configured the firewall"
 	fi
-}
 
-check_env() {
+
 	if ss -tnlp | grep -q ":80 "; then
 		error "Port 80 is occupied (it's required for certificate application)"
 	fi
@@ -252,9 +240,7 @@ check_env() {
 	elif ss -tnlp | grep -q ":$port "; then
 		error "Port $port is occupied"
 	fi
-}
 
-install_packages() {
 	info "Installing the software packages"
 	rpm_packages="tar zip unzip openssl lsof git jq socat crontabs"
 	apt_packages="tar zip unzip openssl lsof git jq socat cron"
@@ -272,26 +258,18 @@ install_packages() {
 		$INS $rpm_packages
 	fi
 	success "Successfully installed the packages"
-}
 
-install_acme() {
 	info "Installing acme.sh"
 	curl -L get.acme.sh | bash || error "Failed to install acme.sh"
 	success "Successfully installed acme.sh"
-}
 
-install_xray() {
 	info "Installing Xray"
 	bash -c "$(curl -L https://github.com/XTLS/Xray-install/raw/main/install-release.sh)" - install --version 1.7.5
 	ps -ef | sed '/grep/d' | grep -q bin/xray || error "Failed to install Xray"
 	success "Successfully installed Xray"
-}
 
-generate_uuid() {
 	[[ -z $passwd ]] && uuid=$(xray uuid) || uuidv5=$(xray uuid -i "$passwd") || error "Failed to generate UUID"
-}
 
-issue_certificate() {
 	info "Issuing a ssl certificate"
 	/root/.acme.sh/acme.sh --issue \
 		-d "$xray_domain" \
@@ -308,9 +286,7 @@ issue_certificate() {
 	else
 		chown nobody:nobody $cert_dir/*.pem
 	fi
-}
 
-configure_xray() {
 	xtls_flow="xtls-rprx-vision"
 	cat > $xray_conf << EOF
 {
@@ -382,20 +358,14 @@ configure_xray() {
   ]
 }
 EOF
-}
 
-xray_restart() {
 	systemctl restart xray
 	ps -ef | sed '/grep/d' | grep -q bin/xray || error "Failed to restart Xray"
 	success "Successfully restarted Xray"
 	sleep 2
-}
-
-crontab_xray() {
+	
 	crontab -l | grep -q Xray || echo -e "$(crontab -l)\n0 0 * * * /usr/bin/bash -c \"\$(curl -L https://github.com/XTLS/Xray-install/raw/main/install-release.sh)\"" | crontab || warning "Failed to add a cron job with crontab"
-}
 
-finish() {
 	success "Successfully installed Xray (VLESS XTLS Vision)"
 	echo ""
 	echo ""
@@ -410,7 +380,7 @@ finish() {
 	echo -e "$Green Share link: $Font vless://${uuidv5:-$uuid}@$xray_domain:$port?flow=$xtls_flow&security=tls&sni=$xray_domain#$xray_domain" | tee -a $info_file
 	echo ""
 	#echo -e "${GreenBG} Tip: ${Font}You can use flow control ${RedBG}xtls-rprx-splice${Font} on the Linux platform to get better performance."
-}
+
 
 #cd /usr/bin
 #wget -O menu "https://raw.githubusercontent.com/Jesanne87/xtls-vision/main/menu.sh"
