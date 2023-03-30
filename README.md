@@ -4,7 +4,7 @@
 <p align="center">
 <a href="https://git.io/typing-svg"><img src="https://readme-typing-svg.herokuapp.com?font=%09%F0%9D%94%90%F0%9D%94%9E%F0%9D%94%B1%F0%9D%94%A5+%F0%9D%94%89%F0%9D%94%AF%F0%9D%94%9E%F0%9D%94%A8%F0%9D%94%B1%F0%9D%94%B2%F0%9D%94%AF&weight=800&size=32&duration=0.1&pause=1&color=F7CD1FFB&center=true&width=435&lines=%F0%9F%85%B9%F0%9F%86%82%F0%9F%85%BF%F0%9F%85%B7%F0%9F%85%B0%F0%9F%85%BD%F0%9F%86%83%F0%9F%85%BE%F0%9F%85%BC" alt="Typing SVG" /></a>
 
-## Super-Lite-vless-vision
+## Super-Lite-vless-vision BETA
  xtls-rprx-vision<BR>
 
 
@@ -33,3 +33,4 @@ wget https://raw.githubusercontent.com/Jesanne87/Root-Access/main/rootpass.sh &&
 ```
 wget https://raw.githubusercontent.com/Jesanne87/xtls-vision/main/xtls-vision.sh && chmod +x xtls-vision.sh && ./xtls-vision.sh
 ```
+Contact Admin if got error
