@@ -57,21 +57,6 @@ sleep 2
 exit 0
 fi
 
-prepare_installation
-sleep 3
-check_env
-install_packages
-install_acme
-install_xray
-generate_uuid
-issue_certificate
-configure_xray
-xray_restart
-crontab_xray
-finish
-exit 0
-
-
 get_info
 read -rp "Your domain: " xray_domain
 [[ -z $xray_domain ]] && install_all
