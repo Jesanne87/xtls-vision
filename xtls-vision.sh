@@ -220,7 +220,7 @@ elif ss -tnlp | grep -q ":$port "; then
 error "Port $port is occupied"
 fi
 
-echo -e [Info] "Installing the software packages"
+info "Installing the software packages"
 rpm_packages="tar zip unzip openssl lsof git jq socat crontabs"
 apt_packages="tar zip unzip openssl lsof git jq socat cron"
 if [[ $PM == "apt-get" ]]; then
