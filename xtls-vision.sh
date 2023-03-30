@@ -482,7 +482,7 @@ show_configuration() {
 	panic "The info file doesn't exist"
 }
 
-menu() {
+#menu() {
 	clear
 	echo ""
 	echo -e "  XRAY-YES - Install and manage Xray $Red""[$script_version]""$Font"
