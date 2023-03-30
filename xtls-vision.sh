@@ -57,7 +57,7 @@ update_script() {
 		[[ $fail -eq 1 ]] && warning "Failed to update" && sleep 2 && return 0
 		success "Successfully updated"
 		sleep 2
-		bash xray-yes-en.sh "$*"
+		./xtls-vision.sh "$*"
 		exit 0
 	fi
 }
