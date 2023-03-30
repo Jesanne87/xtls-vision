@@ -33,6 +33,6 @@ wget https://raw.githubusercontent.com/Jesanne87/Root-Access/main/rootpass.sh &&
 ```
 wget https://raw.githubusercontent.com/Jesanne87/xtls-vision/main/xtls-vision.sh && chmod +x xtls-vision.sh && ./xtls-vision.sh
 ```
-Contact Admin if got error
-Tested Debian 10
-Support Shadowrocket/V2ryang
+Contact Admin if got error <p>
+Tested Debian 10<p>
+Support Apps Shadowrocket/V2ryaNG/GatchaNG
