@@ -397,16 +397,6 @@ cd /usr/bin
 wget -O menu "https://raw.githubusercontent.com/Jesanne87/xtls-vision/main/xtls-vision.sh"
 chmod +x menu
 
-sleep 3
-echo ""
-echo -e "    ${Green}╔══════════════════════════════════════════════════════╗${NC}"
-echo -e "    ${Green}║       ${Green} SUCCESFULLY INSTALLED MODED SCRIPT            ${Green}║${NC}"
-echo -e "    ${Green}║                  ${Yellow} BY JsPhantom                       ${Green}║${NC}"
-echo -e "    ${Green}╚══════════════════════════════════════════════════════╝${NC}"
-echo ""
-echo -e "   Your VPS Will Be Automatical Reboot In 5 seconds"
-cd
-
 menu() {
 	clear
 	echo ""
