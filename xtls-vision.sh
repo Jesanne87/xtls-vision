@@ -285,7 +285,7 @@ success "Successfully installed Xray"
         "clients": [
           {
             "id": "${passwd:-$uuid}",
-            "flow": "xtls-rprx-vision",
+            "flow": "$xtls_flow",
                         "level": 0
 #xray-vless-xtls
 #vxtls            
