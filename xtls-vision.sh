@@ -60,10 +60,8 @@ sleep 2
 echo -e "[ ${green}INFO${NC} ] Alright good ... installation file is ready"
 sleep 2
 clear
-mkdir -p /usr/local/etc/xray/
 read -rp "Your domain: " xray_domain
 [[ -z $xray_domain ]] && install_all
-echo $xray_domain > /root/domain
 echo ""
 echo "Method:"
 echo ""
