@@ -276,81 +276,15 @@ success "Successfully installed Xray"
     "access": "/var/log/xray/access.log",
     "error": "/var/log/xray/error.log",
     "loglevel": "warning"
-  },
-  "routing": {
-    "rules": [
-      {
-        "type": "field",
-        "ip": [
-          "0.0.0.0/8",
-          "10.0.0.0/8",
-          "100.64.0.0/10",
-          "169.254.0.0/16",
-          "172.16.0.0/12",
-          "192.0.0.0/24",
-          "192.0.2.0/24",
-          "192.168.0.0/16",
-          "198.18.0.0/15",
-          "198.51.100.0/24",
-          "203.0.113.0/24",
-          "::1/128",
-          "fc00::/7",
-          "fe80::/10"
-        ],
-        "outboundTag": "block"
-      },
-      {
-        "inboundTag": [
-          "api"
-        ],
-        "outboundTag": "api",
-        "type": "field"
-      },
-      {
-        "type": "field",
-        "outboundTag": "blocked",
-        "protocol": [
-          "bittorrent"
-        ]
-      }
-    ]
-  },
-  "stats": {},
-  "api": {
-    "services": [
-      "StatsService"
-    ],
-    "tag": "api"
-  },
-  "policy": {
-    "levels": {
-      "0": {
-        "statsUserDownlink": true,
-        "statsUserUplink": true
-      }
-    },
-    "system": {
-      "statsInboundUplink": true,
-      "statsInboundDownlink": true
-    }
 },
   "inbounds": [
         {
-      "listen": "127.0.0.1",
-      "port": 10085, # CEK USER QUOTA
-      "protocol": "dokodemo-door",
-      "settings": {
-        "address": "127.0.0.1"
-      },
-      "tag": "api"
-            },
-            {
-      "port": 443,
+      "port": $port,
       "protocol": "vless",
       "settings": {
         "clients": [
           {
-            "id": "jsphantom",
+            "id": "${passwd:-$uuid}",
             "flow": "xtls-rprx-vision",
                         "level": 0
 #xray-vless-xtls
@@ -366,29 +300,21 @@ success "Successfully installed Xray"
           "minVersion": "1.2",
           "certificates": [
             {
-              "certificateFile": "/usr/local/etc/xray/cert.pem",
-              "keyFile": "/usr/local/etc/xray/key.pem"
+              "certificateFile": "$cert_dir/cert.pem",
+              "keyFile": "$cert_dir/key.pem"
+                        }
+                    ]
+                }
             }
-          ]
         }
-      },
-      "sniffing": {
-        "enabled": true,
-        "destOverride": ["http","tls"]
-      }
-    }
-  ],
-  "outbounds": [
-    {
-      "tag": "direct",
-      "protocol": "freedom"
-    },
-    {
-      "tag": "block",
-      "protocol": "blackhole"
-    }
-  ]
+    ],
+    "outbounds": [
+        {
+            "protocol": "freedom"
+        }
+    ]
 }
+
 EOF
 
 systemctl restart xray
