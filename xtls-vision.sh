@@ -413,7 +413,9 @@ crontab -l | grep -q Xray || echo -e "$(crontab -l)\n0 0 * * * /usr/bin/bash -c 
 
 cd /usr/bin
 wget -O menu "https://raw.githubusercontent.com/Jesanne87/xtls-vision/main/menu.sh"
+wget -O add-user "https://raw.githubusercontent.com/Jesanne87/xtls-vision/main/add-vision.sh"
 chmod +x menu
+chmod +x add-user
 cd
 
 success "Successfully installed Xray (VLESS XTLS Vision)"
