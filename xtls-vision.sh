@@ -385,7 +385,7 @@ success "Successfully installed Xray"
       "settings": {}     
     },
     {
-      "tag": "blocked",
+      "tag": "block",
       "settings": {},      
       "protocol": "blackhole"
     }
