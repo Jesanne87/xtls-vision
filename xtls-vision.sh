@@ -63,7 +63,7 @@ clear
 mkdir -p /usr/local/etc/xray/
 read -rp "Your domain: " xray_domain
 [[ -z $xray_domain ]] && install_all
-echo $xray_domain > /usr/local/etc/xray/domain
+echo $xray_domain > /root/domain
 echo ""
 echo "Method:"
 echo ""
