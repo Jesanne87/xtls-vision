@@ -378,7 +378,7 @@ success "Successfully installed Xray"
           "minVersion": "1.2",
           "certificates": [
             {
-              "certificateFile": "$cert_dir/cert.pem/cert.pem",
+              "certificateFile": "$cert_dir/cert.pem",
               "keyFile": "$cert_dir/key.pem"
             }
           ]
