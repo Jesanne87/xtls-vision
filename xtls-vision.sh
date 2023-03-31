@@ -291,8 +291,19 @@ success "Successfully installed Xray"
 #vxtls            
           }
         ],
-        "decryption": "none"
-      },
+        "decryption": "none",
+                "fallbacks": [
+                    {
+                        "dest": 1310,
+                        "xver": 1
+                    },
+                    {
+                        "alpn": "h2",
+                        "dest": 1318,
+                        "xver": 1
+                    }
+                ]
+            },
       "streamSettings": {
         "network": "tcp",
         "security": "tls",
