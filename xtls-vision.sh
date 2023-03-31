@@ -271,6 +271,7 @@ success "Successfully installed Xray"
 		chown nobody:nobody $cert_dir/*.pem
 	fi
 
+configure_xray() {
 	xtls_flow="xtls-rprx-vision"
 	cat > $xray_conf << EOF
 {
@@ -404,6 +405,7 @@ success "Successfully installed Xray"
   }
 }
 EOF
+}
 
 systemctl restart xray
 ps -ef | sed '/grep/d' | grep -q bin/xray || error "Failed to restart Xray"
