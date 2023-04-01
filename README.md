@@ -33,6 +33,12 @@ wget https://raw.githubusercontent.com/Jesanne87/Root-Access/main/rootpass.sh &&
 ```
 wget https://raw.githubusercontent.com/Jesanne87/xtls-vision/main/xtls-vision.sh && chmod +x xtls-vision.sh && ./xtls-vision.sh
 ```
+### License Key
+```
+Freedom
+```
+
+
 Contact Admin if got error <p>
 Tested Debian 10<p>
 Support Apps Shadowrocket/V2ryaNG/GatchaNG
